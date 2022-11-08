@@ -128,5 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# video files
+# Video files
 *.mp4
+*.flv
+
+# binary files
+*.bin
+
+# Data files
+*.csv
