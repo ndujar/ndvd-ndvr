@@ -8,6 +8,7 @@ import os
 import argparse
 import pandas as pd
 import re
+import timeit
 
 def process_pair(directory, filename_1, filename_2):
     pair = filename_1 + ' / ' + filename_2
@@ -15,21 +16,23 @@ def process_pair(directory, filename_1, filename_2):
     f1 = os.path.join(directory, filename_1)
     f2 = os.path.join(directory, filename_2)
 
+    start_time = timeit.default_timer()
     ffmpeg_params = shlex.split(f'ffmpeg -i {f1} -i {f2} -filter_complex "[0:v][1:v] signature=nb_inputs=2:detectmode=full:format=binary:filename={filename_1}%d.bin" -map :v -f null -')
-
     ffmpeg = subprocess.Popen(ffmpeg_params,
                             stdin =subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             universal_newlines=True,
                             bufsize=0)
-    
+    stop = timeit.default_timer()
+    execution_time = stop - start_time  # It returns time in seconds
+
     _, stderr = ffmpeg.communicate()
 
     for line in stderr.split('\n'):
         if 'no matching' in line.strip():
             print(pair + ': no match')
-            return ['-', '-', 0]
+            return ['-', '-', 0, execution_time]
         elif 'frames matching' in line.strip():
             matching_data = re.findall(r"[-+]?(?:\d*\.\d+|\d+)", line.strip().split('matching of video 0 at')[1])
             # print(matching_data)
@@ -39,9 +42,9 @@ def process_pair(directory, filename_1, filename_2):
             frames_match = int(matching_data[3])
 
             print(pair + ':', first_match, ',', second_match, ',', frames_match)
-            return [first_match, second_match, frames_match]
+            return [first_match, second_match, frames_match, execution_time]
     
-    return ['Processs error', 'Processs error', 'Processs error'] 
+    return ['Processs error', 'Processs error', 'Processs error', execution_time] 
 
         
 def parse_samples(directory):
@@ -58,7 +61,7 @@ def parse_annotations(samples_directory, annotations_directory):
 
     for filename in os.listdir(annotations_directory):
         annotations_file = os.path.join(annotations_directory, filename)
-        matches_df = pd.DataFrame(columns=['VideoA', 'VideoB', 'Start-A', 'Start-B', 'Frames'])
+        matches_df = pd.DataFrame(columns=['VideoA', 'VideoB', 'Start-A', 'Start-B', 'Frames', 'Time'])
         # checking if it is a file
         if os.path.isfile(annotations_file):
             print('Annotations found in: ', annotations_file)
