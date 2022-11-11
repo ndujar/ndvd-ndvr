@@ -31,7 +31,7 @@ The main corpus of the dataset consists of 528 video sequences of different leng
 Further details can be found in the article [VCDB: A Large-Scale Database for Partial Copy Detection in Videos](https://fvl.fudan.edu.cn/_upload/article/files/7b/c4/190424104d2192e8e83cb9dfa6fc/5a8d85f7-5738-450c-b957-3de71d8d7e72.pdf), and includes major transformations between the copies such as "insertion of patterns", "camcording", "scale change", "picture in picture", among others. A secondary "background dataset" is further described there but not considered in our research at this point.
 
 As a comparison to other datasets, the table and figures below were obtained from the publication [A Large-Scale Short Video Dataset for Near-Duplicate Video Retrieval](https://svdbase.github.io/files/ICCV19_SVD.pdf).
-![image|690x403](upload://c7FruD0KLK36TKoYHaUZrg6Q6J4.png)
+![image|690x403](https://github.com/ndujar/ndvd-ndvr/blob/main/research/images/datasets_comparison.png)
 
 # Evaluation of the MPEG-7 Video Signature for Near Duplicate Detections
 In order to assess the ability of the MPEG-7 perceptual hashing to identify copied sub-segments of video within another, we used the [signature filter](https://ffmpeg.org/ffmpeg-filters.html#signature-1) provided by ffmpeg. To do that, a few python scripts (available [here](https://github.com/ndujar/ndvd-ndvr)) were produced for convenience.
@@ -44,15 +44,15 @@ These steps are evaluated in more detail in order to properly understand their p
 ## Signature extraction and compression
 The process of extracting a signature according to the MPEG-7 Standard (ISO/IEC 15938) is described in depth at the document https://ieeexplore.ieee.org/document/6164253.
 In summary, it consists of aggregations of "fine signatures" from each frame of the given video sequence into bags-of-words (histograms) that comprise what is referred to as "coarse signatures", taken form every 90 frames, then shifted 45 frames.
-![frame-MPEG-7|627x289](upload://8XqHTbDfRIipanWKxBPM7yjBNNa.png)
+![frame-MPEG-7|627x289](https://github.com/ndujar/ndvd-ndvr/blob/main/research/images/fine-signatures.png)
 
-![bags-MPEG-7|690x441](upload://fFtnHaDYeXRZzNqzpFSO6VjemMs.png)
+![bags-MPEG-7|690x441](https://github.com/ndujar/ndvd-ndvr/blob/main/research/images/coarse_signatures.png)
 
 In the context of the Livepeer ecosystem, this procedure implies an extra computational cost that needs to be evaluated. 
 According to the aforementioned document, the speed of extraction is ~900 fps in a standard PC. It was found, however, a much higher speed in our profiling experiments, carried away in a Lenovo ThinkPad T480 running Ubuntu 22.04.1 with Intel Core i7-8550U (8 cores) and 16GB of RAM.
 The scatter plot below shows the results of our experiments, ran over the 528 samples of the VCDB dataset. Each point represents a single sample's signature extraction time against the total number of pixels (as frames x fps x height x width). The color serves as a reference to observe the influence of the spatial resolution (which is nonexistent).
 It is possible to conclude that neither the number of pixels nor the duration nor the resolution affected significantly to the speed of computation, which fluctuates around the 40ms - 80ms per sample, regardless of the sample's characteristics.
-![image|690x388](upload://oEg5GFxP74uiWPilgxTdEUGQPcn.png)
+![image|690x388](https://github.com/ndujar/ndvd-ndvr/blob/main/research/images/results_scatterplot.png)
 
 Another relevant parameter to take in consideration is that of the extra bytes required by the signatures file.
 According to the specification:
@@ -66,7 +66,7 @@ It is also mentioned that:
 In our case, none of the generated binary files was larger than 2.65MB, as can be observed in the chart below. However, there is a very evident linear relationship between the number of frames (hence the amount of stored fine and coarse signatures) and the size of the binary file. This line is defined by the equation:
 `File Size = 90 * #Frames`
  
-![image|690x387](upload://AknvFRBFGbjn1RUK02koeIp2Ysi.png)
+![image|690x387](https://github.com/ndujar/ndvd-ndvr/blob/main/research/images/storage_scatterplot.png)
 
 Finally, although the option of using other formats for storing exists (.xml), it is strongly discouraged, given the fact that it is not compressed, resulting in much larger signature files.
 
