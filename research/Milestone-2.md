@@ -42,7 +42,7 @@ The charts below illustrate the shape of the four levels of detail available whe
 
 The extraction of the **fine signature** from the bitstream runs at an average ~900FPS, whereas the **coarse signature** can already be read at ~17600 FPS using the same python script mentioned above. This means a 22x faster perfomance, with a size in memory also ~22x smaller, making it very interesting for fast detection processes. The other two frame level signals, with even less computational, load can be also utilized for fast matching in a prior stage.
 
-## Signature extraction over the dataset
+# Signature extraction over the dataset
 
 As described in the corresponding VCDB article [here](https://fvl.fudan.edu.cn/dataset/vcdb/list.htm), the dataset we are using is built from 28 queries to YouTube and MetaCafe. We will refer to them as *topics*. Out of these 28 queries, 528 video clips were selected and the matching of segments within each other was annotated manually and shared with the scientific community.
 Now that we have a better understanding of the architecture of the MPEG-7 signature, we are in a position of analyzing a bit deeper the characteristics of the generated sequences out of those videos.
@@ -88,7 +88,7 @@ The red line represents the original development of signal A at 25fps. It shows 
 
 These considerations do not apply, however, to the **coarse** signature type of signals, as their construction relies on a fixed aggregation every 90 frames.
 
-## Signature's Locality Sensitive Hashing (LSH)
+# Signature's Locality Sensitive Hashing (LSH)
 
 In this milestone, for the sake of clarity, we will limit ourselves to the study of the **coarse** section of the signature. As explained above, its generation is well detailed in the [corresponding article](https://ieeexplore.ieee.org/document/6164253). Nevertheless we will quote here the relevant part:
 > The bag-of-words representation is extracted for temporal segments of 90 consecutive frames. As seen earlier, each fine signature contains five words, i.e. five subsets of the complete frame signature. For each of these five words, the values that it takes over the 90 frame sequence are plotted into a 243-bin histogram [...]. 
@@ -98,7 +98,7 @@ In this milestone, for the sake of clarity, we will limit ourselves to the study
 In other words, even though the size of the **coarse signature** grows with the amount of frames, it doesn't reflect the evolution in time of the frames' characteristics as a single value, but more as groups of histograms.
 For a given set of signatures, this leaves us with sequences of variable lenght that need to be matched at specific points in their timelines and, if possible, with sublinear complexity: enter LSH.
 
-[Locality Sensitive Hashing (LSH)](https://ojs.aaai.org/index.php/AAAI/article/view/9133/8992) is a fairly recent approach to similarity search with applications in NLP, image retrieval within large datasets and, basically, searching.
+[Locality Sensitive Hashing (LSH)](https://ojs.aaai.org/index.php/AAAI/article/view/9133/8992) is a fairly recent approach to similarity search with applications in NLP, image retrieval, basically, anything else that involves matching within large datasets (recommender systems, clustering, audio identification, ...) 
 
 An excellent article describing the technique in context can be found [here](https://www.pinecone.io/learn/vector-indexes/), and more in detail [here](https://www.pinecone.io/learn/locality-sensitive-hashing/).
 According to [this source](https://santhoshhari.github.io/Locality-Sensitive-Hashing/):
@@ -113,7 +113,7 @@ The process implies roughly four steps:
 3. Banding and bucketing of the hash into the LSH Hash tables
 4. Iterate step 3 to adjust for recall and precision
 
-## A proposal NDVD workflow for the Livepeer ecosystem
+# A proposal NDVD workflow for the Livepeer ecosystem
 
 For the problem of duplicate video detection, the overall workflow would be as follows:
 
@@ -123,4 +123,15 @@ For the problem of duplicate video detection, the overall workflow would be as f
 - For newly transcoded videos, extract their feature vectors and query the coarse LSH tables.
 - Compare the feature vector of the new item with the matches returned by means of the adequate distance metric (Jaccard, cosine, ...). 
 - Run a one-to-one comparison in the time domain, searching for common patterns over signals resampled to the same framerate.
-- Flag the new item as **copy** if there are overlapping frames over a given threshold
+- Flag the new item as **copy** if there are overlapping frames over a given threshold.
+
+# Conclusions and further work
+
+In this second milestone we presented a more detailed view of the four elements of the MPEG-7 video descriptor (**coarse**, **confidence**, **words** and **fine** signatures). 
+
+We also took a closer look at the characteristics of the VCDB dataset from the perspective of the use of the signatures computed in the previous milestone. It became clear that, in order to find matches of sub-segments it is necessary to apply a framerate resampling procedure in the fine signature level.
+
+Finally, the Locality Sensitivity Hashing workflow was introduced as a means to build a sub-linear complexity system for duplicate search and flaging.
+
+In the next milestone, we will aim at building  and evaluating a toy system for duplicate detection based on the VCDB dataset that improves over the one-to-one system, FFmpeg based, that we introduced in Milestone 1.
+
