@@ -134,6 +134,7 @@ dmypy.json
 
 # binary files
 *.bin
+*.h5
 
 # Data files
 *.csv
