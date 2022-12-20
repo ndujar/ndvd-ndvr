@@ -137,3 +137,5 @@ dmypy.json
 
 # Data files
 *.csv
+
+annotations/
